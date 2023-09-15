@@ -1,0 +1,18 @@
+﻿table.data-table {
+    border-spacing: 0;
+}
+
+table.data-table th,
+table.data-table td {
+    padding: 0 7px 0 7px;
+    font-family: 'Lucida Console';
+    font-size: 9pt;
+}
+
+table.data-table th {
+    border-bottom: 1px solid white;
+}
+
+table.data-table tr:nth-child(2n) {
+    background: #333;
+}
