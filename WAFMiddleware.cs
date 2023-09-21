@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MaxSecurityWAF.Logging;
+using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Formats.Asn1;
 using System.Security.Cryptography.X509Certificates;
@@ -30,6 +31,8 @@ public class WAFMiddlewareService : IWAFMiddlewareService {
 
 public class WAFMiddleware {
     private IWAFMiddlewareService middlewareService;
+
+    private readonly RequestDelegate _next;
 
     private RequestDelegate next;
 

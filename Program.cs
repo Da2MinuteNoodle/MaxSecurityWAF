@@ -1,4 +1,5 @@
 using MaxSecurityWAF;
+using MaxSecurityWAF.Logging;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ public class Program {
         builder.Services.AddRazorPages();
         builder.Services.AddServerSideBlazor();
         builder.Services.AddSingleton<IWAFMiddlewareService, WAFMiddlewareService>();
+        builder.Services.AddSingleton<LogService>();
         builder.Services.AddReverseProxy()
             .AddTransforms(builderContext => {
                 builderContext.AddResponseTransform(bc => {
