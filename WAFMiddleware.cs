@@ -34,31 +34,15 @@ public class WAFMiddleware {
 
     private readonly RequestDelegate _next;
 
+    private readonly LogService _logService;
+
     private RequestDelegate next;
 
-    private const string SqlInjectionPattern =
-        @"(\s*([\0\b\'\""""\n\r\t\%_\\]*\s*(((select\s*.+\s*from\s*.+)|(insert\s*.+\s*into\s*.+)|(update\s*.+\s*set\s*.+)|(delete\s*.+\s*from\s*.+)|(drop\s*.+)|(truncate\s*.+)|(alter\s*.+)|(exec\s*.+)|(\s*(all|any|not|and|between|in|like|or|some|contains|containsall|containskey)\s*.+[\=\>\<=\!\~]+.+)|(let\s+.+[\=]\s*.*)|(begin\s*.*\s*end)|(\s*[\/\*]+\s*.*\s*[\*\/]+)|(\s*(\-\-)\s*.*\s+)|(\s*(contains|containsall|containskey)\s+.*)))(\s*[\;]\s*)*)+)";
 
-    private Regex sqlInjectionRegex;
-
-    public WAFMiddleware(IWAFMiddlewareService middlewareService, RequestDelegate next) {
+    public WAFMiddleware(IWAFMiddlewareService middlewareService, RequestDelegate next, LogService logService) {
         this.middlewareService = middlewareService;
         this.next              = next;
-
-        sqlInjectionRegex = new(SqlInjectionPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
-    }
-
-    public async Task<bool> SqlInjectionFilter(HttpResponse response) {
-        try {
-            var originalContent = await new StreamReader(response.Body).ReadToEndAsync();
-
-            if(originalContent is null)
-                return false;
-
-            return sqlInjectionRegex.IsMatch(originalContent);
-        } catch {
-            return false;
-        }
+        _logService = logService;
     }
 
     public async Task InvokeAsync(HttpContext context) {
@@ -74,16 +58,16 @@ public class WAFMiddleware {
             .Select(r => r.Action)
             .Contains(WAFRuleAction.Allow);
 
-        if((!allow && !noAllowRules) || deny)
-            goto Reject;
+        var logEntry = new LogEntry
+        {
+            Timestamp = DateTime.UtcNow,
+            SourceIP = context.Connection.RemoteIpAddress?.ToString(),
+            Url = context.Request.Path,
+            Outcome = "Success"
+        };
 
-        if(await SqlInjectionFilter(context.Response)) {
-            context.Response.StatusCode = 403;
-        }
+        _logService.AddLogEntry(logEntry);
 
         await next(context);
-
-    Reject:
-        context.Response.StatusCode = 403;
     }
 }
