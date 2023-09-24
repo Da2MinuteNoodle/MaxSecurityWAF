@@ -33,15 +33,19 @@ public class WAFMiddleware {
 
     private readonly RequestDelegate _next;
 
-    private readonly LogService _logService;
+    private readonly LogService logService;
 
     private RequestDelegate next;
 
 
-    public WAFMiddleware(IWAFMiddlewareService middlewareService, RequestDelegate next, LogService logService) {
+    public WAFMiddleware(
+        IWAFMiddlewareService middlewareService,
+        RequestDelegate next,
+        LogService logService) {
+
         this.middlewareService = middlewareService;
         this.next              = next;
-        _logService = logService;
+        this.logService        = logService;
     }
 
     public async Task InvokeAsync(HttpContext context) {
@@ -57,15 +61,14 @@ public class WAFMiddleware {
             .Select(r => r.Action)
             .Contains(WAFRuleAction.Allow);
 
-        var logEntry = new LogEntry
-        {
+        var logEntry = new LogEntry {
             Timestamp = DateTime.UtcNow,
-            SourceIP = context.Connection.RemoteIpAddress?.ToString(),
-            Url = context.Request.Path,
-            Outcome = "Success"
+            SourceIP  = context.Connection.RemoteIpAddress?.ToString(),
+            Url       = context.Request.Path,
+            Outcome   = "Success"
         };
 
-        _logService.AddLogEntry(logEntry);
+        logService.AddLogEntry(logEntry);
 
         await next(context);
     }
