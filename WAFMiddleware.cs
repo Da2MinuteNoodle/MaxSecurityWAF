@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MaxSecurityWAF.Logging;
+using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Formats.Asn1;
 using System.Security.Cryptography.X509Certificates;
@@ -30,11 +31,17 @@ public class WAFMiddlewareService : IWAFMiddlewareService {
 public class WAFMiddleware {
     private IWAFMiddlewareService middlewareService;
 
+    private readonly RequestDelegate _next;
+
+    private readonly LogService _logService;
+
     private RequestDelegate next;
 
-    public WAFMiddleware(IWAFMiddlewareService middlewareService, RequestDelegate next) {
+
+    public WAFMiddleware(IWAFMiddlewareService middlewareService, RequestDelegate next, LogService logService) {
         this.middlewareService = middlewareService;
-        this.next = next;
+        this.next              = next;
+        _logService = logService;
     }
 
     public async Task InvokeAsync(HttpContext context) {
@@ -50,10 +57,15 @@ public class WAFMiddleware {
             .Select(r => r.Action)
             .Contains(WAFRuleAction.Allow);
 
-        if((!allow && !noAllowRules) || deny) {
-            context.Response.StatusCode = 403;
-            return;
-        }
+        var logEntry = new LogEntry
+        {
+            Timestamp = DateTime.UtcNow,
+            SourceIP = context.Connection.RemoteIpAddress?.ToString(),
+            Url = context.Request.Path,
+            Outcome = "Success"
+        };
+
+        _logService.AddLogEntry(logEntry);
 
         await next(context);
     }

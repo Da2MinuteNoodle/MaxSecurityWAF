@@ -1,0 +1,74 @@
+﻿@page "/Logs"
+@using MaxSecurityWAF.Logging;
+@using System.Text;
+@using System.Text.Json;
+@using System.Text.Encodings; 
+@inject LogService logService
+
+
+<h3>Log Entries</h3>
+
+<div>
+    <input type="text" @bind="filterText" placeholder="Search...." />
+    <button @onclick="ExportLogsCSV">Export as CSV</button>
+    <button @onclick="ExportLogsJSON">Export as JSON</button>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Timestamp</th>
+            <th>Source IP</th>
+            <th>URL</th>
+            <th>Outcome</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var entry in filteredLogs)
+        {
+            <tr>
+                <td>@entry.Timestamp</td>
+                <td>@entry.SourceIP</td>
+                <td>@entry.Url</td>
+                <td>@entry.Outcome</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<LogEntry> filteredLogs = new List<LogEntry>();
+    private string filterText = "";
+
+    protected override void OnInitialized()
+    {
+        filteredLogs = logService.GetLogEntries();
+    }
+
+    private void FilterLogs()
+    {
+        filteredLogs = logService.GetFilteredLogs(filterText);
+    }
+
+    private void ExportLogsCSV()
+    {
+        FilterLogs();
+        var csvContent = string.Join("\n", filteredLogs.Select(log => $"{log.Timestamp},{log.SourceIP},{log.Url},{log.Outcome}"));
+        DownloadFile("logs.csv", "text/csv", csvContent);
+    }
+
+    private void ExportLogsJSON()
+    {
+        FilterLogs();
+        var jsonContent = JsonSerializer.Serialize(filteredLogs, new JsonSerializerOptions { WriteIndented = true });
+        DownloadFile("logs.json", "application/json", jsonContent);
+    }
+
+    private MarkupString DownloadFile(string fileName, string contentType, string content)
+    {
+        var bytes = Encoding.UTF8.GetBytes(content);
+        var base64 = Convert.ToBase64String(bytes);
+        var href = $"data:{contentType};base64,{base64}";
+        return (MarkupString)$"<a href=\"{href}\" download=\"{fileName}\">{fileName}</a>";
+    }
+}
