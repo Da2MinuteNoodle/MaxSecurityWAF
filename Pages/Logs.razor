@@ -1,8 +1,10 @@
 ﻿@page "/Logs"
-@using MaxSecurityWAF.Logging;
-@using System.Text;
-@using System.Text.Json;
-@using System.Text.Encodings; 
+@using MaxSecurityWAF.Logging
+@using System.Text
+@using System.Text.Json
+@using System.Text.Encodings
+@using System.Collections.Generic
+@using System.Linq
 @inject LogService logService
 
 
@@ -12,6 +14,7 @@
     <input type="text" @bind="filterText" placeholder="Search...." />
     <button @onclick="ExportLogsCSV">Export as CSV</button>
     <button @onclick="ExportLogsJSON">Export as JSON</button>
+    <a href="@downloadLink" download="@downloadFileName">@downloadFileName</a>
 </div>
 
 <table class="table">
@@ -39,6 +42,8 @@
 @code {
     private List<LogEntry> filteredLogs = new List<LogEntry>();
     private string filterText = "";
+    private string downloadLink;
+    private string downloadFileName;
 
     protected override void OnInitialized()
     {
@@ -69,6 +74,10 @@
         var bytes = Encoding.UTF8.GetBytes(content);
         var base64 = Convert.ToBase64String(bytes);
         var href = $"data:{contentType};base64,{base64}";
+
+        downloadLink = href;
+        downloadFileName = fileName;
+
         return (MarkupString)$"<a href=\"{href}\" download=\"{fileName}\">{fileName}</a>";
     }
 }
