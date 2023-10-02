@@ -1,5 +1,4 @@
 using MaxSecurityWAF;
-using MaxSecurityWAF.Logging;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;

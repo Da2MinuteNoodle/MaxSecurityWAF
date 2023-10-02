@@ -1,5 +1,4 @@
-﻿using MaxSecurityWAF.Logging;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Formats.Asn1;
 using System.Security.Cryptography.X509Certificates;
@@ -49,6 +48,13 @@ public class WAFMiddleware {
     }
 
     public async Task InvokeAsync(HttpContext context) {
+        // Don't bother filtering requests that aren't targetted
+        // at WebGoat
+        if(!context.Request.Path.ToString().ToLower().StartsWith("/webgoat")) {
+            await next(context);
+            return;
+        }
+
         bool deny = middlewareService.Rules
             .Where(r => r.Action == WAFRuleAction.Deny)
             .Any(r => r.IsMatch(context.Request));
@@ -63,13 +69,20 @@ public class WAFMiddleware {
 
         var logEntry = new LogEntry {
             Timestamp = DateTime.UtcNow,
-            SourceIP  = context.Connection.RemoteIpAddress?.ToString(),
+            SourceIP  = context.Connection.RemoteIpAddress!.ToString(),
             Url       = context.Request.Path,
-            Outcome   = "Success"
         };
 
-        logService.AddLogEntry(logEntry);
+        if((!allow && !noAllowRules) || deny) {
+            // We decided to block the request
+            context.Response.StatusCode = 403;
+            logEntry.Result = LogResult.Rejected;
+        } else {
+            // We decided to allow the request
+            logEntry.Result = LogResult.Allowed;
+            await next(context);
+        }
 
-        await next(context);
+        logService.AddLogEntry(logEntry);
     }
 }

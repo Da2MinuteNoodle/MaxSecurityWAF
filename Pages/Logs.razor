@@ -1,11 +1,11 @@
-﻿@page "/Logs"
-@using MaxSecurityWAF.Logging
+﻿@page "/Admin/Logs"
 @using System.Text
 @using System.Text.Json
 @using System.Text.Encodings
 @using System.Collections.Generic
 @using System.Linq
 @inject LogService logService
+@implements IDisposable
 
 
 <h3>Log Entries</h3>
@@ -27,13 +27,12 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var entry in filteredLogs)
-        {
+        @foreach (var entry in filteredLogs) {
             <tr>
                 <td>@entry.Timestamp</td>
                 <td>@entry.SourceIP</td>
                 <td>@entry.Url</td>
-                <td>@entry.Outcome</td>
+                <td>@entry.Result</td>
             </tr>
         }
     </tbody>
@@ -45,32 +44,36 @@
     private string downloadLink;
     private string downloadFileName;
 
-    protected override void OnInitialized()
-    {
-        filteredLogs = logService.GetLogEntries();
+    protected override void OnInitialized() {
+        InitialLoad();
+        // Register to be notified if the log is changed after
+        // our initial render.
+        logService.LogUpdated += LogUpdated;
     }
 
-    private void FilterLogs()
-    {
+    private void InitialLoad() {
+        filteredLogs = logService.LogEntries;
+        filterText = "";
+        StateHasChanged();
+    }
+
+    private void FilterLogs() {
         filteredLogs = logService.GetFilteredLogs(filterText);
     }
 
-    private void ExportLogsCSV()
-    {
+    private void ExportLogsCSV() {
         FilterLogs();
-        var csvContent = string.Join("\n", filteredLogs.Select(log => $"{log.Timestamp},{log.SourceIP},{log.Url},{log.Outcome}"));
+        var csvContent = string.Join("\n", filteredLogs.Select(log => $"{log.Timestamp},{log.SourceIP},{log.Url},{log.Result}"));
         DownloadFile("logs.csv", "text/csv", csvContent);
     }
 
-    private void ExportLogsJSON()
-    {
+    private void ExportLogsJSON() {
         FilterLogs();
         var jsonContent = JsonSerializer.Serialize(filteredLogs, new JsonSerializerOptions { WriteIndented = true });
         DownloadFile("logs.json", "application/json", jsonContent);
     }
 
-    private MarkupString DownloadFile(string fileName, string contentType, string content)
-    {
+    private MarkupString DownloadFile(string fileName, string contentType, string content) {
         var bytes = Encoding.UTF8.GetBytes(content);
         var base64 = Convert.ToBase64String(bytes);
         var href = $"data:{contentType};base64,{base64}";
@@ -80,4 +83,16 @@
 
         return (MarkupString)$"<a href=\"{href}\" download=\"{fileName}\">{fileName}</a>";
     }
+
+    // Automatically re-render the log view page as messages
+    // roll in. This will clear the user's search.
+    // TODO: don't clear the user's search
+    public void LogUpdated(object? sender, EventArgs e) =>
+        InvokeAsync(() => InitialLoad());
+
+    // Absolutely essential
+    // This is required to ensure we free up resources and
+    // don't re-render 1000's of inactive pages.
+    public void Dispose() =>
+        logService.LogUpdated -= LogUpdated;
 }
