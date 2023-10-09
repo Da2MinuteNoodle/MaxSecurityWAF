@@ -7,7 +7,8 @@ using System.Text.RegularExpressions;
 namespace MaxSecurityWAF;
 
 public class WAFContext : DbContext {
-    public DbSet<WAFRule> Rules { get; set; }
+    public DbSet<WAFRule> Rules { get; set; } 
+    //public DbSet<User> Users { get; set; } #Needs to be fixed
 
     protected override void OnConfiguring(DbContextOptionsBuilder options) =>
         options.UseSqlite($"Data Source={nameof(MaxSecurityWAF)}.db");
@@ -45,3 +46,9 @@ public class WAFRule {
         return SourceIP == request.HttpContext.Connection.RemoteIpAddress;
     }
 }
+
+//public class User 
+//{
+  //  public string Username { get; set; }
+  //  public string Password { get; set; }
+//}
