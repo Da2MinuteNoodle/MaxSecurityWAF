@@ -8,7 +8,7 @@ namespace MaxSecurityWAF;
 
 public class WAFContext : DbContext {
     public DbSet<WAFRule> Rules { get; set; } 
-    //public DbSet<User> Users { get; set; } #Needs to be fixed
+    public DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options) =>
         options.UseSqlite($"Data Source={nameof(MaxSecurityWAF)}.db");
@@ -47,8 +47,10 @@ public class WAFRule {
     }
 }
 
-//public class User 
-//{
-  //  public string Username { get; set; }
-  //  public string Password { get; set; }
-//}
+public class User 
+{
+[Key]
+[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+public string Username { get; set; }
+public string Password { get; set; }
+}
