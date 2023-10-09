@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Sqlite.Query.Internal;
 using System.Data;
 using System.Formats.Asn1;
 using System.Security.Cryptography.X509Certificates;
@@ -28,6 +29,10 @@ public class WAFMiddlewareService : IWAFMiddlewareService {
 
 }
 public class WAFMiddleware {
+    private readonly Regex SqlRegex = new(
+        @"((SELECT|INSERT|UPDATE)\s+.+\s+(FROM|INTO|SET)\s+.+\b)|((ALTER|DROP)\s+TABLE\s+)|(GRANT\s+.+\s+ON\s+.+\s+TO\s+)|([0-9'];)",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     private IWAFMiddlewareService middlewareService;
 
     private readonly RequestDelegate _next;
@@ -35,7 +40,6 @@ public class WAFMiddleware {
     private readonly LogService logService;
 
     private RequestDelegate next;
-
 
     public WAFMiddleware(
         IWAFMiddlewareService middlewareService,
@@ -45,6 +49,17 @@ public class WAFMiddleware {
         this.middlewareService = middlewareService;
         this.next              = next;
         this.logService        = logService;
+    }
+
+    public async Task<bool> ContainsSql(HttpRequest request) {
+        if(!request.HasFormContentType)
+            return false;
+
+        request.EnableBuffering();
+        var form = await request.ReadFormAsync();
+        request.Body.Seek(0, SeekOrigin.Begin);
+
+        return form.Any(kv => kv.Value.Any(v => v is null ? false : SqlRegex.IsMatch(v)));
     }
 
     public async Task InvokeAsync(HttpContext context) {
@@ -73,7 +88,12 @@ public class WAFMiddleware {
             Url       = context.Request.Path,
         };
 
-        if((!allow && !noAllowRules) || deny) {
+        bool block = (!allow && !noAllowRules) || deny;
+
+        if(await ContainsSql(context.Request))
+            block = true;
+
+        if(block) {
             // We decided to block the request
             context.Response.StatusCode = 403;
             logEntry.Result = LogResult.Rejected;
