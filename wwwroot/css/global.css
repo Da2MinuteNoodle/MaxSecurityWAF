@@ -1,15 +1,15 @@
 ﻿@import url('/css/data-table.css');
 
 body {
-    background: #222;
-    color: white;
+    background: white;
+    color: black;
 }
 
 a {
-    color: #00ffff;
+    color: #0026ff;
     text-decoration: none;
 }
 
 a:hover {
-    color: #d0ffff;
+    color: #4800ff;
 }

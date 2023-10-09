@@ -4,9 +4,9 @@
 
 table.data-table th,
 table.data-table td {
-    padding: 0 7px 0 7px;
-    font-family: 'Lucida Console';
-    font-size: 9pt;
+    padding: 10px 10px;
+    font-family: 'Segoe UI';
+    font-size: 15pt;
 }
 
 table.data-table th {
@@ -14,5 +14,5 @@ table.data-table th {
 }
 
 table.data-table tr:nth-child(2n) {
-    background: #333;
+    background: #808080;
 }
