@@ -12,6 +12,7 @@
 
 <div>
     <input type="text" @bind="filterText" placeholder="Search...." />
+    <button @onclick="FilterLogs">Search</button>
     <button @onclick="ExportLogsCSV">Export as CSV</button>
     <button @onclick="ExportLogsJSON">Export as JSON</button>
     <a href="@downloadLink" download="@downloadFileName">@downloadFileName</a>
