@@ -1,5 +1,4 @@
-﻿using MaxSecurityWAF;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Net;
@@ -44,19 +43,19 @@ public class WAFRule {
         if(SourceIP.Address == 0)
             return true;
 
-        return SourceIP == request.HttpContext.Connection.RemoteIpAddress;
+
+        if (SourceIP.GetAddressBytes().SequenceEqual(request.HttpContext.Connection.RemoteIpAddress.GetAddressBytes()))
+            return true;
+
+
+        return false;
     }
 }
 
 public class User 
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public string Username { get; set; }
-    public string Password { get; set; }
-  
+[Key]
+[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+public string Username { get; set; }
+public string Password { get; set; }
 }
-
-
-
-    
