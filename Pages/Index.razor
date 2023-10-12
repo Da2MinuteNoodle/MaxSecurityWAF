@@ -1,4 +1,10 @@
 ﻿@page "/"
+@using MaxSecurityWAF
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject IJSRuntime jsRunTime
 
 <PageTitle>MaxSecurity WAF</PageTitle>
 
@@ -6,3 +12,16 @@
 
 <p>This is the home page of the Web Application Firewall interface.</p>
 
+<Microsoft.AspNetCore.Components.Authorization.AuthorizeView>
+    <Authorized>
+        <p>Welcome, @context.User.Identity.Name </p>
+
+        <p>You are an Authorised User.</p>
+
+    </Authorized>
+
+    <NotAuthorized>
+        <p>You are a non Authorised User.</p>
+
+    </NotAuthorized>
+</Microsoft.AspNetCore.Components.Authorization.AuthorizeView>

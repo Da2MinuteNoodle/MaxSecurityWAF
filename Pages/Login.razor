@@ -2,6 +2,7 @@
 @page "/login"
 @using MaxSecurityWAF
 @using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @inject IJSRuntime jsRunTime
@@ -31,27 +32,55 @@
 @code {
 
     private User user = new User();
-   // public string LoginMesssage { get; set; }
-    ClaimsPrincipal? claimsPrincipal;
+    // public string LoginMesssage { get; set; }
+    // ClaimsPrincipal? claimsPrincipal;
 
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    // [CascadingParameter]
+    // private Task<AuthenticationState> authenticationStateTask { get; set; }
 
-    protected async override Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
         user = new User();
-
-        claimsPrincipal = (await authenticationStateTask).User;
-
-        if (claimsPrincipal.Identity.IsAuthenticated)
-        {
-            NavigationManager.NavigateTo("/index");
-        }
-        {
-            user.username = "admin";
-            user.Password = "password";
-        }
+        return base.OnInitializedAsync();
 
     }
+    /*   claimsPrincipal = (await authenticationStateTask).User;
+
+  if (claimsPrincipal.Identity.IsAuthenticated)
+  {
+      NavigationManager.NavigateTo("/index");
+  }
+  {
+      user.username = "admin";
+      user.Password = "password";
+  }
+
+} */
+
+    private async Task<bool> ValidateUser()
+    {
+        //assume that user is valid
+        //call an API
+
+        /*  var returnedUser = await userService.LoginAsync(user);
+
+          if (returnedUser.username != null)
+          {
+              await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(returnedUser);
+              NavigationManager.NavigateTo("/index");
+          }
+          else
+          {
+              LoginMesssage = "Invalid username or password";
+          }  */
+
+
+        ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(user.username);
+        NavigationManager.NavigateTo("/index");
+
+        return await Task.FromResult(true);
+
+    }
+
 
 }
