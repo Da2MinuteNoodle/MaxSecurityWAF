@@ -1,5 +1,7 @@
+using Blazored.SessionStorage;
 using MaxSecurityWAF;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 using Yarp.ReverseProxy.Transforms;
@@ -10,10 +12,14 @@ public class Program {
 
         builder.Services.AddDbContextFactory<WAFContext>();
         builder.Services.AddRazorPages();
+        builder.Services.AddAuthorizationCore();
         builder.Services.AddServerSideBlazor();
         builder.Services.AddSingleton<IWAFMiddlewareService, WAFMiddlewareService>();
+        builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider> (); 
         builder.Services.AddSingleton<LogService>();
+        builder.Services.AddBlazoredSessionStorage(); 
         builder.Services.AddReverseProxy()
+
             .AddTransforms(builderContext => {
                 builderContext.AddResponseTransform(bc => {
                     var headers = bc.HttpContext.Response.Headers;
@@ -47,6 +53,10 @@ public class Program {
         app.MapReverseProxy();
         app.UseMiddleware<WAFMiddleware>();
 
+        app.UseAuthentication();
+        app.UseAuthorization(); 
+
         app.Run();
     }
 }
+
