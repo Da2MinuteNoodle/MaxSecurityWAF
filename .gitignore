@@ -363,3 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 
 MaxSecurityWAF.db
+MaxSecurityWAF.db-shm
+MaxSecurityWAF.db-wal

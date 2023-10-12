@@ -1,60 +1,41 @@
-﻿@layout LoginLayout
-@page "/"
-@using MaxSecurityWAF
-@using System.Security.Claims
-@using Microsoft.AspNetCore.Components.Authorization
-@inject AuthenticationStateProvider AuthenticationStateProvider
-@inject NavigationManager NavigationManager
-@inject IJSRuntime jsRunTime
-@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+﻿@page "/Login"
 
+<PageTitle>WAF Login</PageTitle>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
-</head>
-<body>
-    <div>
-        <h2>Login</h2>
-        <form action="login_process.php" method="POST">
-            <input type="text" name="username" placeholder="Username" required><br>
-            <input type="password" name="password" placeholder="Password" required><br>
-            <input type="submit" value="Login">
-        </form>
-    </div>
-</body>
-</html>
+<script suppress-error="BL9992">
+    @*
+    Sending the login credentials unfortunately isn't as straight-forward
+    as a <form method="POST"> if we'd like to play a custom animation
+    on unsuccessful login. Fortunately, a small helper function to interpret
+    the response is all we need.
+    *@
+    async function login() {
+        var form   = document.querySelector('form#login');
+        var inputs = Array.from(form.getElementsByTagName('input'));
 
+        var formData = new FormData(form);
 
+        var resp = await fetch('/Login', {
+            method: 'POST',
+            body: formData
+        });
 
-@code {
-
-    private User user = new User();
- 
-
-    protected override Task OnInitializedAsync()
-    {
-        user = new User();
-        return base.OnInitializedAsync();
-
+        if(resp.ok) {
+            window.location.href = '/Admin/Logs';
+        } else if(resp.status == 403) {
+            cycleClass(form, 'bad-login');
+            inputs.filter(i => i.type != 'submit').forEach(e => e.value = null);
+            inputs[0].focus();
+        } else {
+            alert('Unknown error while attempting to login!');
+        }
     }
+</script>
 
+<h2>Login</h2>
 
-    private async Task<bool> ValidateUser()
-    {
-        
-
-        ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(user.username);
-        NavigationManager.NavigateTo("/index");
-
-        await sessionStorage.SetItemAsync("Username",user.username);
-
-        return await Task.FromResult(true);
-
-    }
-
-
-}
+<form id="login" action="javascript:login();">
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <input type="submit" value="Login">
+</form>

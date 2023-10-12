@@ -1,4 +1,8 @@
-﻿namespace MaxSecurityWAF;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace MaxSecurityWAF;
 
 public enum LogResult {
     Allowed,
@@ -6,9 +10,13 @@ public enum LogResult {
     Rejected
 }
 
+[Index(nameof(Timestamp))]
 public class LogEntry {
-    public DateTime  Timestamp { get; set; }
-    public string    SourceIP  { get; set; }
-    public string    Url       { get; set; }
-    public LogResult Result    { get; set; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int       LogEntryId { get; set; }
+    public DateTime  Timestamp  { get; set; }
+    public string    SourceIP   { get; set; }
+    public string    Url        { get; set; }
+    public LogResult Result     { get; set; }
 }

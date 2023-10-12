@@ -1,27 +1,22 @@
-﻿@page "/dashboard"
+﻿@page "/Admin/Dashboard"
+@attribute [Authorize]
+@inject ILogService logService
 
-<body>
-    <h2>Dashboard</h2>
-    <main>
-        <section id="status">
-            <h3>Status</h3>
-            <div id="status-content">
-                <!-- Status information will be displayed here -->
-            </div>
-        </section>
-        <section id="requests" class="active">
-                <h3>Requests Summary</h3>
-                <p><span>Total Requests:</span> <span id="total-requests">0</span></p>
-                <p><span>Blocked Requests:</span> <span id="blocked-requests">0</span></p>
-        </section>
-        <section id="blocked-ip">
-            <h3>Blocked IP Addresses</h3>
-            <ul id="blocked-ip-list">
-                <!-- List of blocked IP addresses will be populated here -->
-            </ul>
-        </section>
-    </main>
-    <footer>
-        <p>WAF</p>
-    </footer>
-</body>
+<h2>Dashboard</h2>
+
+<h3>Requests Summary</h3>
+
+<p>Total Requests: @total</p>
+<p>Blocked Requests: @totalBlocked</p>
+
+@code {
+    private int total;
+    private int totalBlocked;
+
+    protected override void OnInitialized() {
+        total        = logService.LogEntries.Count();
+        totalBlocked = logService.LogEntries
+            .Where(e => e.Result != LogResult.Allowed)
+            .Count();
+    }
+}

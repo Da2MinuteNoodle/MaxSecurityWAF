@@ -1,24 +1,18 @@
-﻿@page "/logs"
-@using System.Text
-@using System.Text.Json
-@using System.Text.Encodings
-@using System.Collections.Generic
-@using System.Linq
-@inject LogService logService
+﻿@page "/Admin/Logs"
+@inject ILogService logService
 @implements IDisposable
 
+@attribute [Authorize]
 
-<h3>Log Entries</h3>
+<h2>Log Entries</h2>
 
-<div>
-    <input type="text" @bind="filterText" placeholder="Search...." />
-    <button @onclick="FilterLogs">Search</button>
-    <button @onclick="ExportLogsCSV">Export as CSV</button>
-    <button @onclick="ExportLogsJSON">Export as JSON</button>
-    <a href="@downloadLink" download="@downloadFileName">@downloadFileName</a>
+<div style="margin-bottom:20px">
+    <input type="text" @onchange=FilterLog placeholder="Search...." />
+    <button onclick="window.location.href='/Admin/Logs.csv'">Export CSV</button>
+    <button onclick="window.location.href='/Admin/Logs.json'">Export JSON</button>
 </div>
 
-<table class="table">
+<table class="data-table">
     <thead>
         <tr>
             <th>Timestamp</th>
@@ -28,73 +22,54 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var entry in filteredLogs) {
+        @foreach(var entry in logEntries) {
             <tr>
-                <td>@entry.Timestamp</td>
+                <td>@entry.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
                 <td>@entry.SourceIP</td>
                 <td>@entry.Url</td>
                 <td>@entry.Result</td>
+            </tr>
+        }
+        @for(int i = 0; i < 30 - logEntries.Count(); i++) {
+            <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
             </tr>
         }
     </tbody>
 </table>
 
 @code {
-    private List<LogEntry> filteredLogs = new List<LogEntry>();
-    private string filterText = "";
-    private string downloadLink;
-    private string downloadFileName;
+    private List<LogEntry> logEntries = new();
+    private string?        filter;
 
     protected override void OnInitialized() {
-        InitialLoad();
+        logEntries = logService.LogEntries.ToList();
         // Register to be notified if the log is changed after
         // our initial render.
         logService.LogUpdated += LogUpdated;
     }
 
-    private void InitialLoad() {
-        filteredLogs = logService.LogEntries;
-        filterText = "";
-        StateHasChanged();
+    private void FilterLog(ChangeEventArgs e) {
+        filter = (string?) e.Value;
+        if(!string.IsNullOrEmpty(filter))
+            logEntries = logService.GetFilteredLogs(filter).ToList();
+        else
+            logEntries = logService.LogEntries.ToList();
     }
 
-    private void FilterLogs() {
-        filteredLogs = logService.GetFilteredLogs(filterText);
-    }
-
-    private void ExportLogsCSV() {
-        FilterLogs();
-        var csvContent = string.Join("\n", filteredLogs.Select(log => $"{log.Timestamp},{log.SourceIP},{log.Url},{log.Result}"));
-        DownloadFile("logs.csv", "text/csv", csvContent);
-    }
-
-    private void ExportLogsJSON() {
-        FilterLogs();
-        var jsonContent = JsonSerializer.Serialize(filteredLogs, new JsonSerializerOptions { WriteIndented = true });
-        DownloadFile("logs.json", "application/json", jsonContent);
-    }
-
-    private MarkupString DownloadFile(string fileName, string contentType, string content) {
-        var bytes = Encoding.UTF8.GetBytes(content);
-        var base64 = Convert.ToBase64String(bytes);
-        var href = $"data:{contentType};base64,{base64}";
-
-        downloadLink = href;
-        downloadFileName = fileName;
-
-        return (MarkupString)$"<a href=\"{href}\" download=\"{fileName}\">{fileName}</a>";
-    }
-
-    // Automatically re-render the log view page as messages roll in. 
-    public void LogUpdated(object? sender, EventArgs e)
-    {
-        string storedText = filterText; // Store the current search text 
-        InvokeAsync(() =>
-        {
-            InitialLoad();
-            filterText = storedText; // Restore the search text after the update 
+    // Automatically re-render the log view page as messages
+    // roll in. This will clear the user's search.
+    // TODO: don't clear the user's search
+    public void LogUpdated(object? sender, LogEntry entry) =>
+        InvokeAsync(() => {
+            if(string.IsNullOrEmpty(filter)) {
+                logEntries.Insert(0, entry);
+                StateHasChanged();
+            }
         });
-    }
 
     // Absolutely essential
     // This is required to ensure we free up resources and

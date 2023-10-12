@@ -1,0 +1,7 @@
+﻿table {
+    min-width: 50%;
+}
+
+table tr:last-child {
+    background: initial !important;
+}

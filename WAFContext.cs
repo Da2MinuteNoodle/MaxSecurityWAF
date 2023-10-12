@@ -7,11 +7,22 @@ using System.Text.RegularExpressions;
 namespace MaxSecurityWAF;
 
 public class WAFContext : DbContext {
-    public DbSet<WAFRule> Rules { get; set; } 
-    public DbSet<User> Users { get; set; }
+    public DbSet<WAFRule>  Rules      { get; set; } 
+    public DbSet<User>     Users      { get; set; }
+    public DbSet<LogEntry> LogEntries { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options) =>
         options.UseSqlite($"Data Source={nameof(MaxSecurityWAF)}.db");
+
+    protected override void OnModelCreating(ModelBuilder builder) {
+        builder.Entity<User>().HasData(new[] {
+            new User() {
+                UserId   = -1,
+                Username = "admin",
+                Password = "admin"
+            }
+        });
+    }
 }
 
 public enum WAFRuleAction {
@@ -43,19 +54,15 @@ public class WAFRule {
         if(SourceIP.Address == 0)
             return true;
 
-
-        if (SourceIP.GetAddressBytes().SequenceEqual(request.HttpContext.Connection.RemoteIpAddress.GetAddressBytes()))
-            return true;
-
-
-        return false;
+        return SourceIP == request.HttpContext.Connection.RemoteIpAddress;
     }
 }
 
-public class User 
-{
-[Key]
-[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-public string Username { get; set; }
-public string Password { get; set; }
+[Index(nameof(Username))]
+public class User {
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int    UserId   { get; set; }
+    public string Username { get; set; }
+    public string Password { get; set; }
 }

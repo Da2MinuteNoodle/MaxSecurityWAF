@@ -4,7 +4,7 @@
 
 table.data-table th,
 table.data-table td {
-    padding: 10px 10px;
+    padding: 5px 10px 5px 10px;
     font-family: 'Segoe UI';
     font-size: 15pt;
 }
@@ -14,5 +14,5 @@ table.data-table th {
 }
 
 table.data-table tr:nth-child(2n) {
-    background: #808080;
+    background: rgba(255, 255, 255, 0.1);
 }

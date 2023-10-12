@@ -1,75 +1,89 @@
-﻿@page "/rules"
-@using System.Net
+﻿@page "/Admin/Rules"
+@attribute [Authorize]
 @inject WAFContext db
 @inject IWAFMiddlewareService wafMiddlewareService
 
-@switch(state) {
-    case State.View:
-        <table class="data-table">
-            <tr>
-                <th>Enabled</th>
-                <th>Action</th>
-                <th>Path</th>
-                <th>SourceIP</th>
-                <th></th>
-            </tr>
-            @foreach(var rule in db.Rules) {
-                <tr>
-                    <td><input @onchange=@((e) => SetEnabled(rule, (bool) e.Value!)) type="checkbox" id="enabled" name="enabled" checked=@rule.Enabled/></td>
-                    @if(rule == toEdit) {
-                        <td>
-                            <select>
-                                <option value=@WAFRuleAction.Allow selected=@(toEdit.Action == WAFRuleAction.Allow)>Allow</option>
-                                <option value=@WAFRuleAction.Deny selected=@(toEdit.Action == WAFRuleAction.Deny)>Deny</option>
-                            </select>
-                        </td>
-                        <td><input @bind=path type="text"/></td>
-                        <td><input @bind=sourceIP type="text"/></td>
-                        <td>
-                            <a href="javascript:;" @onclick=SubmitEdit>Submit</a>
-                            <a href="javascript:;" @onclick=@(() => toEdit = null)>Cancel</a>
-                        </td>
-                    } else {
-                        <td>@rule.Action</td>
-                        <td>@rule.Path</td>
-                        <td>@rule.SourceIP</td>
-                        <td>
-                            <a href="javascript:;" @onclick=@(() => Edit(rule))>Edit</a>
-                            <a href="javascript:;" @onclick=@(() => Delete(rule))>Delete</a>
-                        </td>
-                    }
-                </tr>
+<h2>Firewall Rules</h2>
+
+<table class="data-table">
+    <tr>
+        <th>Enabled</th>
+        <th>Action</th>
+        <th>Path</th>
+        <th>SourceIP</th>
+        <th></th>
+    </tr>
+    @foreach(var rule in db.Rules) {
+        <tr>
+            <td><input @onchange=@((e) => SetEnabled(rule, (bool) e.Value!)) type="checkbox" id="enabled" name="enabled" checked=@rule.Enabled/></td>
+            @if(rule == toEdit) {
+                <td>
+                    <select>
+                        <option value=@WAFRuleAction.Allow selected=@(toEdit.Action == WAFRuleAction.Allow)>Allow</option>
+                        <option value=@WAFRuleAction.Deny selected=@(toEdit.Action == WAFRuleAction.Deny)>Deny</option>
+                    </select>
+                </td>
+                <td><input @bind=path type="text"/></td>
+                <td><input @bind=sourceIP type="text"/></td>
+                <td>
+                    <a href="javascript:;" @onclick=@(() => toEdit = null)>Cancel</a>
+                    <a href="javascript:;" @onclick=SubmitEdit>Submit</a>
+                </td>
+            } else {
+                <td>@rule.Action</td>
+                <td>@rule.Path</td>
+                <td>@rule.SourceIP</td>
+                <td>
+                    <a href="javascript:;" @onclick=@(() => Edit(rule))>Edit</a>
+                    <a href="javascript:;" @onclick=@(() => Delete(rule))>Delete</a>
+                </td>
             }
-        </table>
-        <button @onclick=@(() => state = State.Create)>Create</button>
-        break;
-    case State.Create:
-        <label for="action">Action</label>
-        <select @bind=action name="action">
-            <option value=@WAFRuleAction.Allow>Allow</option>
-            <option value=@WAFRuleAction.Deny>Deny</option>
-        </select>
-        <label for="path">Path</label>
-        <input @bind=path name="path" type="text"/>
-        <label for="sourceIP">Source IP</label>
-        <input @bind=sourceIP name="sourceIP" type="text"/>
-        <button @onclick=Submit>Submit</button>
-        break;
-}
+        </tr>
+    }
+    @for(int i = 0; i < 10 - db.Rules.Count(); i++) {
+        <tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+        </tr>
+    }
+    @if(create) {
+        <tr>
+            <td><input type="checkbox"/></td>
+            <td>
+                <select @bind=action name="action">
+                    <option value=@WAFRuleAction.Allow>Allow</option>
+                    <option value=@WAFRuleAction.Deny>Deny</option>
+                </select>
+            </td>
+            <td><input @bind=path name="path" type="text"/></td>
+            <td><input @bind=sourceIP name="sourceIP" type="text"/></td>
+            <td>
+                <a href="javascript:;" @onclick=@(() => create = false)>Cancel</a>
+                <a href="javascript:;" @onclick=Submit>Submit</a>
+            </td>
+        </tr>
+    } else {
+        <tr>
+            <td colspan="5">
+                <center>
+                    <a href="javascript:;" @onclick=@(() => create = true)>Create a new rule</a>
+                </center>
+            </td>
+        </tr>
+    }
+</table>
 
 @code {
-    private enum State {
-        View,
-        Create,
-    }
-
-    private string path;
-    private string sourceIP;
+    private string        path;
+    private string        sourceIP;
     private WAFRuleAction action;
 
     private WAFRule? toEdit = null;
 
-    private State state = State.View;
+    private bool create = false;
 
     public void Edit(WAFRule toEdit) {
         path        = toEdit.Path;
@@ -86,7 +100,7 @@
 
         db.SaveChanges();
         wafMiddlewareService.Reload();
-        state = State.View;
+        create = false;
     }
 
     public void SubmitEdit() {

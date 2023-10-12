@@ -1,8 +1,6 @@
-using Blazored.SessionStorage;
 using MaxSecurityWAF;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Web;
+using MaxSecurityWAF.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Yarp.ReverseProxy.Transforms;
 
@@ -10,16 +8,17 @@ public class Program {
     public static void Main(string[] args) {
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddAuthentication(
+            CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
         builder.Services.AddDbContextFactory<WAFContext>();
+        builder.Services.AddControllers();
         builder.Services.AddRazorPages();
-        builder.Services.AddAuthorizationCore();
         builder.Services.AddServerSideBlazor();
         builder.Services.AddSingleton<IWAFMiddlewareService, WAFMiddlewareService>();
-        builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider> (); 
-        builder.Services.AddSingleton<LogService>();
-        builder.Services.AddBlazoredSessionStorage(); 
-        builder.Services.AddReverseProxy()
+        builder.Services.AddSingleton<ILogService, LogService>();
 
+        builder.Services.AddReverseProxy()
             .AddTransforms(builderContext => {
                 builderContext.AddResponseTransform(bc => {
                     var headers = bc.HttpContext.Response.Headers;
@@ -41,22 +40,18 @@ public class Program {
         using var db = scope.ServiceProvider.GetRequiredService<WAFContext>();
         db.Database.Migrate();
 
+        app.UseAuthentication();
         app.UseHsts();
         app.UseHttpsRedirection();
-
         app.UseStaticFiles();
         app.UseRouting();
-
+        app.MapControllers();
         app.MapBlazorHub();
         app.MapFallbackToPage("/_Host");
 
         app.MapReverseProxy();
         app.UseMiddleware<WAFMiddleware>();
 
-        app.UseAuthentication();
-        app.UseAuthorization(); 
-
         app.Run();
     }
 }
-

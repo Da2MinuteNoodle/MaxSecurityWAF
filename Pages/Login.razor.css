@@ -1,0 +1,12 @@
+﻿form.bad-login {
+    animation-iteration-count: 3;
+    animation-timing-function: linear;
+    animation:                 bad-login 0.2s;
+}
+
+@keyframes bad-login {
+      0% { transform: translateX(0);     }
+     33% { transform: translateX(-15px); }
+     66% { transform: translateX(+15px); }
+    100% { transform: translateX(0);     }
+}

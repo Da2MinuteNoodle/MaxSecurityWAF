@@ -1,15 +1,72 @@
 ﻿@import url('/css/data-table.css');
 
+:root {
+    --col-accent-pri:      #f22;
+    --col-accent-pri-hl:   #faa;
+    --col-scrollbar:       #666;
+    --col-scrollbar-hover: #aaa;
+}
+
 body {
-    background: white;
-    color: black;
+    background:     #222;
+    color:          white;
+    display:        flex;
+    flex-direction: row;
+    font-family:    'Trebuchet MS';
+    margin:         0;
+    overflow:       hidden;
 }
 
 a {
-    color: #0026ff;
+    color:           var(--col-accent-pri);
     text-decoration: none;
 }
 
 a:hover {
+    color: var(--col-accent-pri-hl) !important;
+}
+
+a:hover {
     color: #4800ff;
+}
+
+input, button, select {
+    background:    #333;
+    border:        none;
+    border-radius: 5px;
+    box-sizing:    border-box;
+    color:         white;
+    padding:       5px;
+}
+
+input[type="button"], input[type="submit"], button {
+    background: #555;
+    cursor:     pointer;
+}
+
+input[type="button"]:hover, input[type="submit"]:hover, button:hover {
+    background: #888;
+}
+
+input[type="checkbox"] {
+    accent-color: var(--col-accent-pri);
+    background-color: #000;
+}
+
+::-webkit-scrollbar {
+    width:  10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background:    var(--col-scrollbar);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--col-scrollbar-hover);
+}
+
+::-webkit-scrollbar-corner {
+    opacity: 0;
 }

@@ -1,0 +1,6 @@
+div#content {
+    flex-grow: 1;
+    height:    100vh;
+    overflow:  scroll;
+    padding:   20px;
+}
