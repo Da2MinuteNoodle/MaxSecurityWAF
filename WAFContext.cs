@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MaxSecurityWAF;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Net;
@@ -49,8 +50,21 @@ public class WAFRule {
 
 public class User 
 {
-[Key]
-[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-public string Username { get; set; }
-public string Password { get; set; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public string Username { get; set; }
+    public string Password { get; set; }
+   /* 
+    public User()
+    {
+        user = new User();
+        user.Username = "admin";
+        user.Password = "password";
+
+    }
+   */
 }
+
+
+
+    
