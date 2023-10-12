@@ -84,11 +84,16 @@
         return (MarkupString)$"<a href=\"{href}\" download=\"{fileName}\">{fileName}</a>";
     }
 
-    // Automatically re-render the log view page as messages
-    // roll in. This will clear the user's search.
-    // TODO: don't clear the user's search
-    public void LogUpdated(object? sender, EventArgs e) =>
-        InvokeAsync(() => InitialLoad());
+    // Automatically re-render the log view page as messages roll in. 
+    public void LogUpdated(object? sender, EventArgs e)
+    {
+        string storedText = filterText; // Store the current search text 
+        InvokeAsync(() =>
+        {
+            InitialLoad();
+            filterText = storedText; // Restore the search text after the update 
+        });
+    }
 
     // Absolutely essential
     // This is required to ensure we free up resources and
