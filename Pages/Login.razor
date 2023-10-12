@@ -1,6 +1,11 @@
 ﻿@layout LoginLayout
 @page "/login"
 @using MaxSecurityWAF
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject IJSRuntime jsRunTime
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -21,7 +26,32 @@
 </body>
 </html>
 
-@code 
-{
-    
+
+
+@code {
+
+    private User user = new User();
+   // public string LoginMesssage { get; set; }
+    ClaimsPrincipal? claimsPrincipal;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        user = new User();
+
+        claimsPrincipal = (await authenticationStateTask).User;
+
+        if (claimsPrincipal.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo("/index");
+        }
+        {
+            user.username = "admin";
+            user.Password = "password";
+        }
+
+    }
+
 }

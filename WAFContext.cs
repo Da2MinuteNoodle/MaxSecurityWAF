@@ -54,15 +54,7 @@ public class User
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public string Username { get; set; }
     public string Password { get; set; }
-   /* 
-    public User()
-    {
-        user = new User();
-        user.Username = "admin";
-        user.Password = "password";
-
-    }
-   */
+  
 }
 
 
