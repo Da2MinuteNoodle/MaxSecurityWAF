@@ -23,8 +23,10 @@
         if(resp.ok) {
             window.location.href = '/Admin/Logs';
         } else if(resp.status == 403) {
-            cycleClass(form, 'bad-login');
-            inputs.filter(i => i.type != 'submit').forEach(e => e.value = null);
+            inputs.filter(i => i.type != 'submit').forEach(e => {
+                e.value = null;
+                cycleClass(e, 'bad-login');
+            });
             inputs[0].focus();
         } else {
             alert('Unknown error while attempting to login!');
@@ -32,10 +34,19 @@
     }
 </script>
 
-<h2>Login</h2>
+<div id="login">
+    <h2><center>Login</center></h2>
+    <form id="login" action="javascript:login();">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <input type="submit" value="Login">
+    </form>
+</div>
 
-<form id="login" action="javascript:login();">
-    <input type="text" name="username" placeholder="Username" required>
-    <input type="password" name="password" placeholder="Password" required>
-    <input type="submit" value="Login">
-</form>
+@code {
+    [CascadingParameter]
+    public MainLayout Layout { get; set; }
+
+    protected override void OnInitialized() =>
+        Layout.ShowSidebar = false;
+}

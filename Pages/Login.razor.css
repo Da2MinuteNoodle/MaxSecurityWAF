@@ -1,4 +1,22 @@
-﻿form.bad-login {
+﻿div#login {
+    background: #444;
+    box-sizing: border-box;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 10px 10px;
+    height:     500px;
+    left:       50%;
+    padding:    20px;
+    position:   absolute;
+    top:        50%;
+    transform:  translate(-50%, -50%);
+    width:      500px;
+}
+
+div#login input {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.bad-login {
     animation-iteration-count: 3;
     animation-timing-function: linear;
     animation:                 bad-login 0.2s;

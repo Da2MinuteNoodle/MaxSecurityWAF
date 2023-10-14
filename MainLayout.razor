@@ -2,8 +2,14 @@
 
 <PageTitle>Web Application Firewall</PageTitle>
 
-<NavMenu/>
+<CascadingValue Value=this>
+    <NavMenu/>
 
-<div id="content">
-    @Body
-</div>
+    <div id="content">
+        @Body
+    </div>
+</CascadingValue>
+
+@code {
+    public bool ShowSidebar { get; set; } = true;
+}

@@ -1,8 +1,15 @@
-﻿<div>
-    <a href="/">Home</a>
-    <a href="/Admin/Dashboard">Dashboard</a>
-    <a href="/Admin/Rules">Rules</a>
-    <a href="/Admin/Logs">Logs</a>
-    <a href="/Admin/Users">User Management</a>
-    <a href="/Logout">Logout</a>
-</div>
+﻿@if(Layout.ShowSidebar) {
+    <div>
+        <a href="/">Home</a>
+        <a href="/Admin/Dashboard">Dashboard</a>
+        <a href="/Admin/Rules">Rules</a>
+        <a href="/Admin/Logs">Logs</a>
+        <a href="/Admin/Users">User Management</a>
+        <a href="/Logout">Logout</a>
+    </div>
+}
+
+@code {
+    [CascadingParameter]
+    public MainLayout Layout { get; set; }
+}
