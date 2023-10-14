@@ -18,7 +18,7 @@
             <td><input @onchange=@((e) => SetEnabled(rule, (bool) e.Value!)) type="checkbox" id="enabled" name="enabled" checked=@rule.Enabled/></td>
             @if(rule == toEdit) {
                 <td>
-                    <select>
+                    <select @bind=action>
                         <option value=@WAFRuleAction.Allow selected=@(toEdit.Action == WAFRuleAction.Allow)>Allow</option>
                         <option value=@WAFRuleAction.Deny selected=@(toEdit.Action == WAFRuleAction.Deny)>Deny</option>
                     </select>
