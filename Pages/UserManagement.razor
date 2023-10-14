@@ -1,5 +1,6 @@
 ﻿@page "/Admin/Users"
 @inject IDbContextFactory<WAFContext> dbFactory
+@inject IJSRuntime jsRuntime
 
 <h2>User Management</h2>
 
@@ -10,21 +11,119 @@
     </tr>
     @foreach(var user in Users) {
         <tr>
-            <td>@user.Username</td>
-            <td>
-                <a href="javascript:;">Edit</a>
-                <a href="javascript:;">Delete</a>
-            </td>
+            @if(user == toEdit) {
+                <td>
+                    <input type="text" placeholder="New username..." @bind=editUsername/>
+                    <input type="password" placeholder="New password..." @bind=editPassword/>
+                </td>
+                <td>
+                    <a href="javascript:;" @onclick=@CancelEdit>Cancel</a>
+                    <a href="javascript:;" @onclick=SubmitEdit>@(user.UserId == default ? "Create" : "Submit")</a>
+                </td>
+            } else {
+                <td>@user.Username</td>
+                <td>
+                    @* Protect builtin accounts from accidental deletion *@
+                    @if(user.UserId >= 0) {
+                        <a href="javascript:;" @onclick=@(() => DeleteUser(user))>Delete</a>
+						<a href="javascript:;" @onclick=@(() => EditUser(user))>Edit</a>
+                    } else {
+						<a href="javascript:;" @onclick=@(() => EditUser(user))>Edit</a>
+                    }
+                </td>
+            }
         </tr>
     }
+    <tr>
+        <td colspan="2">
+            <center>
+                <a href="javascript:;" @onclick=CreateUser>Add a new user...</a>
+            </center>
+        </td>
+    </tr>
 </table>
 
 @code {
-    public IEnumerable<User> Users {
-        get {
-            using var db = dbFactory.CreateDbContext();
-            foreach(var user in db.Users.OrderBy(u => u.Username))
-                yield return user;
-        }
+    private List<User> Users = new();
+
+    private string editUsername = "";
+    private string editPassword = "";
+
+    private User? toEdit;
+
+    protected override void OnInitialized() {
+        using var db = dbFactory.CreateDbContext();
+        Users = db.Users
+            .OrderBy(u => u.Username)
+            .ToList();
     }
-}
+
+    private void EditUser(User user) {
+        toEdit       = user;
+        editUsername = user.Username;
+        editPassword = "";
+    }
+
+    private async void SubmitEdit() {
+        using var db = dbFactory.CreateDbContext();
+
+        User toEdit = this.toEdit!;
+
+        db.Attach(toEdit);
+
+        if(!string.IsNullOrWhiteSpace(editUsername))
+            toEdit.Username = editUsername.Trim().ToLower();
+        if(!string.IsNullOrWhiteSpace(editPassword))
+            toEdit.Password = User.HashPassword(editPassword.Trim());
+
+        if(toEdit.UserId == default) {
+            // Ensure username is unique if we're creating a new user
+            if(db.Users.Any(u => u.Username == toEdit.Username)) {
+                await jsRuntime.InvokeVoidAsync(
+                    "alert",
+                    "User already exists with that name!");
+                return;
+            }
+            // Ensure password is provided if we're creating a new user
+            if(string.IsNullOrWhiteSpace(editPassword)) {
+                await jsRuntime.InvokeVoidAsync(
+                    "alert",
+                    "A password is required!");
+                return;
+            }
+        }
+
+        db.SaveChanges();
+        this.toEdit = null;
+        StateHasChanged();
+    }
+
+    private void CancelEdit() {
+        if(toEdit!.UserId == default)
+            Users.Remove(toEdit);
+        toEdit = null;
+    }
+
+    private void CreateUser() {
+        var user = new User();
+        Users.Add(user);
+        EditUser(user);
+        StateHasChanged();
+    }
+
+    private async void DeleteUser(User user) {
+        var result = await jsRuntime.InvokeAsync<bool>(
+            "confirm",
+            $"Are you sure you want to delete the user \"{user.Username}\"?");
+
+        if(!result)
+            return;
+
+        using var db = dbFactory.CreateDbContext();
+        db.Users.Remove(user);
+        db.SaveChanges();
+
+        Users.Remove(user);
+        StateHasChanged();
+    }
+}
