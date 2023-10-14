@@ -1,0 +1,39 @@
+﻿@page "/Admin/Blacklist"
+@attribute [Authorize]
+@inject IWAFMiddlewareService wafMiddlewareService
+@implements IDisposable
+
+<h2>Blacklist</h2>
+
+<table>
+    <tr>
+        <th>IP Address</th>
+    </tr>
+    @foreach(var entry in wafMiddlewareService.BlacklistedAddresses) {
+        <tr>
+            <td>@entry</td>
+            <td>
+                <a href="javascript:;" @onclick=@(() => Delete(entry))>Delete</a>
+            </td>
+        </tr>
+    }
+</table>
+
+@code {
+    protected override void OnInitialized() {
+        wafMiddlewareService.OnBlacklistChange += OnBlacklistChange;
+    }
+
+    public void OnBlacklistChange(object? sender, EventArgs e) {
+        InvokeAsync(() => StateHasChanged());
+    }
+
+    public void Delete(IPAddress address) {
+        wafMiddlewareService.RemoveBlacklistEntry(address);
+        StateHasChanged();
+    }
+
+    public void Dispose() {
+        wafMiddlewareService.OnBlacklistChange -= OnBlacklistChange;
+    }
+}

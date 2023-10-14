@@ -1,7 +1,9 @@
 using MaxSecurityWAF;
 using MaxSecurityWAF.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 using Yarp.ReverseProxy.Transforms;
 
 public class Program {
@@ -17,6 +19,11 @@ public class Program {
         builder.Services.AddServerSideBlazor();
         builder.Services.AddSingleton<IWAFMiddlewareService, WAFMiddlewareService>();
         builder.Services.AddSingleton<ILogService, LogService>();
+        builder.Services.Configure<ForwardedHeadersOptions>(options => {
+            options.ForwardLimit = 2;
+            options.KnownProxies.Add(IPAddress.Parse("10.10.0.23"));
+            options.ForwardedForHeaderName = "X-Forwarded-For";
+        });
 
         builder.Services.AddReverseProxy()
             .AddTransforms(builderContext => {
@@ -50,6 +57,7 @@ public class Program {
         app.MapFallbackToPage("/_Host");
 
         app.MapReverseProxy();
+        app.UseMiddleware<ForwardedHeadersMiddleware>();
         app.UseMiddleware<WAFMiddleware>();
 
         app.Run();

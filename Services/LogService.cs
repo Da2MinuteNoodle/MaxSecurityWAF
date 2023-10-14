@@ -67,8 +67,7 @@ public class LogService : ILogService, IDisposable {
             .OrderByDescending(e => e.Timestamp)
             .Where(e =>
                 e.SourceIP.Contains(filter) ||
-                e.Url.Contains(filter) ||
-                e.Result.ToString().Contains(filter));
+                e.Url.Contains(filter));
 
         foreach(var entry in entries)
             yield return entry;
@@ -91,6 +90,7 @@ public class LogService : ILogService, IDisposable {
 
         lock(writeCache) {
             db.LogEntries.AddRange(writeCache);
+            db.SaveChanges();
             writeCache.Clear();
         }
     }

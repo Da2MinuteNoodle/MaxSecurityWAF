@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace MaxSecurityWAF.Controllers;
 
@@ -30,7 +31,11 @@ public class LogController : Controller {
     public async Task<IActionResult> LogJson() {
         return File(
             Encoding.UTF8.GetBytes(
-                JsonSerializer.Serialize(logService.LogEntries)),
+                JsonSerializer.Serialize(logService.LogEntries, new JsonSerializerOptions() {
+                    Converters = {
+                        new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
+                    }
+                })),
             "application/json",
             $"{BaseFilename}.json");
     }

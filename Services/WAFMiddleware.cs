@@ -95,10 +95,14 @@ public class WAFMiddleware {
         if(await ContainsXss(context.Request))
             block = true;
 
-        if(block) {
+        if(block)
+            middlewareService.RecordBadRequest(context);
+
+        if(block || middlewareService.IsBlacklisted(context.Connection.RemoteIpAddress)) {
             // We decided to block the request
             context.Response.StatusCode = 403;
             logEntry.Result = LogResult.Rejected;
+            middlewareService.RecordBadRequest(context);
         } else {
             // We decided to allow the request
             logEntry.Result = LogResult.Allowed;
