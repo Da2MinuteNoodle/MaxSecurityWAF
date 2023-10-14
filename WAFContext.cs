@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Net;
@@ -19,7 +20,7 @@ public class WAFContext : DbContext {
             new User() {
                 UserId   = -1,
                 Username = "admin",
-                Password = "admin"
+                Password = User.HashPassword("admin")
             }
         });
     }
@@ -65,4 +66,13 @@ public class User {
     public int    UserId   { get; set; }
     public string Username { get; set; }
     public string Password { get; set; }
+
+    public static string HashPassword(string password) =>
+        Convert.ToBase64String(
+            KeyDerivation.Pbkdf2(
+                password,
+                Array.Empty<byte>(),
+                KeyDerivationPrf.HMACSHA512,
+                100_000,
+                512 / 8));
 }

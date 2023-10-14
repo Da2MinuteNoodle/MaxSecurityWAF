@@ -32,7 +32,7 @@ public class LoginController : Controller {
         if(user is null)
             return StatusCode(403);
 
-        if(password != user.Password)
+        if(MaxSecurityWAF.User.HashPassword(password) != user.Password)
             return StatusCode(403);
 
         var claims = new Claim[] {
