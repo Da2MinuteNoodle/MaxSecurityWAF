@@ -5,3 +5,7 @@
 table tr:last-child {
     background: initial !important;
 }
+
+#submit {
+    color: green
+}

@@ -58,11 +58,11 @@
                     <option value=@WAFRuleAction.Deny>Deny</option>
                 </select>
             </td>
-            <td><input @bind=path name="path" type="text"/></td>
-            <td><input @bind=sourceIP name="sourceIP" type="text"/></td>
+            <td>/<input @bind=path name="path" type="text" placeholder="path"/>/</td>
+            <td><input @bind=sourceIP name="sourceIP" type="text" placeholder="eg; 192.168.1.1"/></td>
             <td>
                 <a href="javascript:;" @onclick=@(() => create = false)>Cancel</a>
-                <a href="javascript:;" @onclick=Submit>Submit</a>
+                <a id="submit" href="javascript:;" @onclick=Submit>Submit</a>
             </td>
         </tr>
     } else {

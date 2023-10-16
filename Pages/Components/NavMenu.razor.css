@@ -22,6 +22,10 @@ div > a:hover {
     color:      white !important;
 }
 
+div > a:focus {
+    background: grey
+}
+
 div > a:last-child {
     margin-top: auto;
 }
