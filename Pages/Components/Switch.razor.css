@@ -1,0 +1,27 @@
+﻿div.outer {
+  background: #444;
+  border-radius: 10px;
+  height: 20px;
+  position: relative;
+  transition: background 0.1s linear;
+  width: 40px;
+}
+
+div.inner {
+  background: white;
+  border-radius: 8px;
+  height: 16px;
+  left: 2px;
+  position: absolute;
+  top: 2px;
+  transition: left 0.1s linear;
+  width: 16px;
+}
+
+input:checked + div.outer {
+  background: var(--col-accent-pri);
+}
+
+input:checked + div.outer > div.inner {
+  left: 22px;
+}

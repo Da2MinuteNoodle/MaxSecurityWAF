@@ -17,7 +17,9 @@
     </tr>
     @foreach(var rule in db.Rules) {
         <tr>
-            <td><input @onchange=@((e) => SetEnabled(rule, (bool) e.Value!)) type="checkbox" id="enabled" name="enabled" checked=@rule.Enabled/></td>
+            <td>
+                <Switch InitialValue=@rule.Enabled OnChange=@((v) => SetEnabled(rule, v))/>
+            </td>
             @if(rule == toEdit) {
                 <td>
                     <select @bind=action>

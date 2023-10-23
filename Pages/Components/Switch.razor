@@ -1,0 +1,18 @@
+﻿ <label>
+  <input
+      type="checkbox"
+      hidden
+      checked=@InitialValue
+      @onchange=@((e) => OnChange.InvokeAsync((bool) e.Value!))/>
+  <div class="outer">
+    <div class="inner"/>
+  </div>
+</label> 
+
+@code {
+    [Parameter]
+    public bool? InitialValue { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> OnChange { get; set; }
+}
