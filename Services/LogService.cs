@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 
 namespace MaxSecurityWAF.Services;
 
+// Nizan Logging Service
 public interface ILogService {
     public IEnumerable<LogEntry> LogEntries { get; }
 
@@ -38,6 +39,7 @@ public class LogService : ILogService, IDisposable {
         writebackTimer.Change(FlushInterval, FlushInterval);
     }
 
+    // Ronald Log Entry Addition
     public void AddLogEntry(LogEntry entry) {
         entry.Timestamp = DateTime.SpecifyKind(entry.Timestamp, DateTimeKind.Utc);
 
@@ -58,6 +60,7 @@ public class LogService : ILogService, IDisposable {
         LogUpdated?.Invoke(this, entry);
     }
 
+    // Ronald & Nizan Log Filtering (Search)
     public IEnumerable<LogEntry> GetFilteredLogs(string filter) {
         Flush();
 
@@ -81,6 +84,8 @@ public class LogService : ILogService, IDisposable {
                 yield return entry;
         }
     }
+
+    // Ronald DB Flush
 
     // We flush the write-cache before querying the DB to avoid
     // an expensive merge and sort operation locally. Let the DB

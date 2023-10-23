@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Net;
 using Yarp.ReverseProxy.Transforms;
 
+
+// Team Boilerplate code
 public class Program {
     public static void Main(string[] args) {
         var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +27,7 @@ public class Program {
             options.ForwardedForHeaderName = "X-Forwarded-For";
         });
 
+        // Max's reverse proxy functionality
         builder.Services.AddReverseProxy()
             .AddTransforms(builderContext => {
                 builderContext.AddResponseTransform(bc => {
@@ -42,6 +45,8 @@ public class Program {
 
         var app = builder.Build();
 
+
+        // Laiba DB code
         // Ensure the DB is created and it's schema is up to date
         var scope = app.Services.CreateScope();
         using var db = scope.ServiceProvider.GetRequiredService<WAFContext>();

@@ -10,6 +10,8 @@ public enum LogResult {
     Rejected
 }
 
+// Ronald Logging Module
+
 [Index(nameof(Timestamp))]
 public class LogEntry {
     [Key]

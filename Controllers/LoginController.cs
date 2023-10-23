@@ -19,6 +19,8 @@ public class LoginController : Controller {
         this.dbFactory           = dbFactory;
     }
 
+    // Ronald & Nitzan login
+
     [HttpPost("/Login")]
     public async Task<IActionResult> LoginAsync(
         [FromForm] string username,
@@ -27,7 +29,7 @@ public class LoginController : Controller {
         username = username.ToLower().Trim();
 
         using var db = dbFactory.CreateDbContext();
-
+      
         var user = db.Users.FirstOrDefault(u => u.Username == username);
         if(user is null)
             return StatusCode(403);

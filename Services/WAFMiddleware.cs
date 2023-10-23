@@ -4,10 +4,13 @@ using System.Text.RegularExpressions;
 
 namespace MaxSecurityWAF.Services;
 
+// Max, Nitzan & Laiba middleware
 public class WAFMiddleware {
+    // Laiba SQL Regex
     private readonly Regex SqlRegex = new(
         @"((SELECT|INSERT|UPDATE)\s+.+\s+(FROM|INTO|SET)\s+.+\b)|((ALTER|DROP)\s+TABLE\s+)|(GRANT\s+.+\s+ON\s+.+\s+TO\s+)|([0-9'];)",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    // Max XSS Regex
     private readonly Regex XssRegex = new(
         @"(<\/?(script|a)>)|(javascript:)|(" + XssMagicPattern + ")",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -31,6 +34,7 @@ public class WAFMiddleware {
         this.logService        = logService;
     }
 
+    // Laiba & Nitzan SQL injection detection
     public async Task<bool> ContainsSql(HttpRequest request) {
         if (!request.HasFormContentType)
             return false;
@@ -41,7 +45,7 @@ public class WAFMiddleware {
 
         return form.Any(kv => kv.Value.Any(v => v is null ? false : SqlRegex.IsMatch(v)));
     }
-
+    // Laiba & Nitzan SQL Injection
     public async Task<bool> ContainsXss(HttpRequest request) {
         if(!request.HasFormContentType)
             return false;
@@ -62,6 +66,7 @@ public class WAFMiddleware {
         return getMatches || formMatches || xssMatches;
     }
 
+    // Max Rule Engine
     public async Task InvokeAsync(HttpContext context) {
         // Don't bother filtering requests that aren't targetted
         // at WebGoat
@@ -69,7 +74,6 @@ public class WAFMiddleware {
             await next(context);
             return;
         }
-
         bool deny = middlewareService.Rules
             .Where(r => r.Action == WAFRuleAction.Deny)
             .Any(r => r.IsMatch(context.Request));
@@ -82,6 +86,7 @@ public class WAFMiddleware {
             .Select(r => r.Action)
             .Contains(WAFRuleAction.Allow);
 
+        // Ronald Logging
         var logEntry = new LogEntry {
             Timestamp = DateTime.UtcNow,
             SourceIP  = context.Connection.RemoteIpAddress!.ToString(),
@@ -98,6 +103,7 @@ public class WAFMiddleware {
         if(block)
             middlewareService.RecordBadRequest(context);
 
+        // Max Blacklsiting
         if(block || middlewareService.IsBlacklisted(context.Connection.RemoteIpAddress)) {
             // We decided to block the request
             context.Response.StatusCode = 403;

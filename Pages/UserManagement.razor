@@ -2,6 +2,7 @@
 @inject IDbContextFactory<WAFContext> dbFactory
 @inject IJSRuntime jsRuntime
 
+@* Brayden & Laiba *@
 <h2>User Management</h2>
 
 <table class="data-table">
@@ -110,6 +111,8 @@
         EditUser(user);
         StateHasChanged();
     }
+
+    @* Max some DB code *@
 
     private async void DeleteUser(User user) {
         var result = await jsRuntime.InvokeAsync<bool>(

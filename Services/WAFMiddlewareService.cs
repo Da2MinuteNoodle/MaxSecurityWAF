@@ -15,6 +15,7 @@ public interface IWAFMiddlewareService {
     public void Reload();
 }
 
+// Max Middleware Service
 public class WAFMiddlewareService : IWAFMiddlewareService {
     // Maximum number of offending requests before a client is blacklisted
     public const int MaxBlacklistCount = 3;
@@ -35,6 +36,7 @@ public class WAFMiddlewareService : IWAFMiddlewareService {
         Reload();
     }
 
+    // Max & Laiba Blacklistign
     public bool IsBlacklisted(IPAddress address) =>
         Blacklist.Any(e => e.Count > MaxBlacklistCount && e.IPAddress == address);
 

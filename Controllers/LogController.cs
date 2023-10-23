@@ -6,6 +6,8 @@ using System.Text.Json.Serialization;
 
 namespace MaxSecurityWAF.Controllers;
 
+
+// Ronald & Nizan logging controller
 [Controller]
 public class LogController : Controller {
     private ILogService logService;

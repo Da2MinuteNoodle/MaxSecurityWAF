@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace MaxSecurityWAF;
 
+// Laiba Database Code
 public class WAFContext : DbContext {
     public DbSet<WAFRule>  Rules      { get; set; } 
     public DbSet<User>     Users      { get; set; }
@@ -31,6 +32,7 @@ public enum WAFRuleAction {
     Allow = 1
 }
 
+
 public class WAFRule {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -42,6 +44,7 @@ public class WAFRule {
 
     private Regex? pathRegex;
 
+    // Max's Reverse Proxy WAF code
     public bool IsMatch(HttpRequest request) {
         if(!Enabled)
             return false;
@@ -59,6 +62,7 @@ public class WAFRule {
     }
 }
 
+// Braydens User Class
 [Index(nameof(Username))]
 public class User {
     [Key]
@@ -67,6 +71,7 @@ public class User {
     public string Username { get; set; }
     public string Password { get; set; }
 
+    // Max and Braydens Hashing
     public static string HashPassword(string password) =>
         Convert.ToBase64String(
             KeyDerivation.Pbkdf2(
