@@ -18,7 +18,7 @@ public interface IWAFMiddlewareService {
 // Max Middleware Service
 public class WAFMiddlewareService : IWAFMiddlewareService {
     // Maximum number of offending requests before a client is blacklisted
-    public const int MaxBlacklistCount = 3;
+    public const int MaxBlacklistCount = 4;
 
     public readonly TimeSpan BlackFlushInterval = TimeSpan.FromSeconds(30);
 
@@ -63,7 +63,9 @@ public class WAFMiddlewareService : IWAFMiddlewareService {
             Blacklist.First(e => e.IPAddress == address && e.Count > MaxBlacklistCount));
 
     public IEnumerable<IPAddress> BlacklistedAddresses =>
-        Blacklist.Select(e => e.IPAddress);
+        Blacklist
+            .Where(e => e.Count > MaxBlacklistCount)
+            .Select(e => e.IPAddress);
 
     public void Reload() {
         using var db = dbFactory.CreateDbContext();
